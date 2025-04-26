@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Study Mitra</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="shortcut icon" href="../static/chatbot.png" type="image/x-icon">
+    <style>
+      body {
+        margin: 0;
+        font-family: "Roboto", sans-serif;
+        background-color: #121212;
+        color: #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+      header {
+        background-color: #1f1f1f;
+        padding: 1rem;
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: bold;
+        border-bottom: 1px solid #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      header span{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0 15px;
+      }
+      header img {
+        width:40px;
+        height: 40px;
+      }
+
+      .chat-container {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .message {
+        margin: 0.5rem 0;
+        max-width: 70%;
+        padding: 0.75rem;
+        border-radius: 10px;
+        line-height: 1.5;
+        word-wrap: break-word;
+      }
+      .user-message {
+        align-self: flex-end;
+        background-color: #4a90e2;
+        color: white;
+      }
+      .bot-message {
+        align-self: flex-start;
+        background-color: #2c2c2c;
+        color: #e0e0e0;
+      }
+      .input-container {
+        display: flex;
+        padding: 1rem;
+        background-color: #1f1f1f;
+        border-top: 1px solid #333;
+      }
+      input[type="text"] {
+        flex: 1;
+        padding: 0.75rem;
+        background-color: #2c2c2c;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-size: 1rem;
+      }
+      button {
+        margin-left: 0.5rem;
+        padding: 0 1.5rem;
+        background-color: #4a90e2;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #357ab8;
+      }
+      select {
+        margin-left: 0.5rem;
+        padding: 0.75rem;
+        background-color: #2c2c2c;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-size: 1rem;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header style="position: relative">
+        <span><img src="../static/chatbot.png" > Study Mitra </span> 
+      <!-- Language Selection Dropdown -->
+      <select id="language-select">
+        <option value="English">English</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Spanish">Spanish</option>
+        <option value="French">French</option>
+        <option value="German">German</option>
+        <!-- Add more languages as needed -->
+      </select>
+    </header>
+
+    <div class="chat-container" id="chat-container">
+      <!-- Messages will appear here -->
+    </div>
+
+    <div class="input-container">
+      <input
+        type="text"
+        id="user-input"
+        placeholder="Type your message..."
+        autocomplete="off"
+      />
+
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+      function appendMessage(message, sender) {
+        const chatContainer = document.getElementById("chat-container");
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add(
+          "message",
+          sender === "user" ? "user-message" : "bot-message"
+        );
+        messageDiv.innerText = message;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      
+
+      async function sendMessage() {
+        const input = document.getElementById("user-input");
+        const userMessage = input.value.trim();
+        if (userMessage === "") return;
+
+        // Get selected language
+        const languageSelect = document.getElementById("language-select");
+        const selectedLanguage = languageSelect.value;
+
+        // Display user message
+        appendMessage(userMessage, "user");
+        input.value = ""; // Clear the input field
+
+        // Send the user message to the server
+        const response = await fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMessage, language: selectedLanguage }),
+        });
+
+        // Check if the response is successful
+        if (response.ok) {
+          const data = await response.json(); // Parse the JSON response
+          appendMessage(data.reply, "bot"); // Append the bot's reply
+        } else {
+          console.error("Error: Unable to get response from server");
+        }
+      }
+    </script>
+  </body>
+</html>
